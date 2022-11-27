@@ -43,9 +43,9 @@ agric_production_data<- production_data %>% filter (element_code != "Footnote") 
 
 
 glimpse(agric_production_data)
+#summary(agric_production_data)
 
-
-agric_production_data_formatted <- agric_production_data%>%
+agric_production_data_formatted <- agric_production_data %>%
   filter(!is.na(Price)) %>%
   mutate(Region     = as_factor(Region),
          Year       = as.Date(as.character(Year), format = "%Y"),
@@ -68,6 +68,7 @@ summary(agric_production_data_formatted)
 gross_agric_prod <- agric_production_data_formatted %>%
   filter(Production == "Gross Production") %>%
   select("Region", "Year", "Price") %>%
+  #select("Region", "Year", "Price", "Category") %>%
   arrange(Year) %>%
   #mutate(price = Price *1000) %>%
  
@@ -81,18 +82,23 @@ gross_agric_prod <- agric_production_data_formatted %>%
 
   
 # generate list of top 10 countries with highest gross agric production
- gross_agric_prod_top_10 <- gross_agric_prod  %>% 
-   group_by(Region) %>%
+ gross_agric_prod_annual <- gross_agric_prod  %>% 
+   group_by(Region, Year) %>%
    summarise(Gross_Prod   = sum(Price)) %>%
-   arrange(desc(Gross_Prod)) %>%
-   select(-Gross_Prod) %>%
-   slice(1:10) %>%
-   left_join(gross_agric_prod)
+   arrange(desc(Gross_Prod)) 
  
-  #top_10 <- left_join(gross_agric_prod_top_10, gross_agric_prod)
+ gross_agric_prod_top_10 <- gross_agric_prod  %>% 
+     group_by(Region) %>%
+     summarise(Gross_Prod   = sum(Price)) %>%
+     arrange(desc(Gross_Prod)) %>%
+     select(-Gross_Prod) %>%
+     slice(1:10) %>%
+     left_join(gross_agric_prod_annual) 
+ 
+ #validate
+ gross_agric_prod_top_10 %>% select(Region) %>% unique()
  
    
- levels(gross_agric_prod_top_10$Region)
  summary(gross_agric_prod_top_10)
  glimpse(gross_agric_prod_top_10)
  
@@ -101,7 +107,7 @@ gross_agric_prod <- agric_production_data_formatted %>%
   
 #GAP Chart for the top 10 countries
 gross_agric_prod_top_10 %>%
-  ggplot(aes(x = Year, y = Price, group=Region, color = Region, fill = Region)) +
+  ggplot(aes(x = Year, y = Gross_Prod, group=Region, color = Region, fill = Region)) +
   geom_area() +
   #geom_line() +
   scale_colour_discrete(name='Region') +
@@ -122,15 +128,15 @@ gross_agric_prod_top_10 %>%
   
 #Box plot of GAP for top 10 countries
 
-boxplot(mpg~cyl,data=mtcars, main="Car Milage Data",
-        xlab="Number of Cylinders", ylab="Miles Per Gallon")
+# boxplot(mpg~cyl,data=mtcars, main="Car Milage Data",
+#         xlab="Number of Cylinders", ylab="Miles Per Gallon")
 
 
-  boxplot(Price ~ Region,
-          data = gross_agric_prod_top_10, 
-          main = "Gross Argricultural Producing Top 10 Countries from 1961 - 2007",
-          xlab = "Year",
-          ylab = "Gross Agricultural Product ('000)")
+  # boxplot(Gross_Prod ~ Region,
+  #         data = gross_agric_prod_top_10, 
+  #         main = "Gross Argricultural Producing Top 10 Countries from 1961 - 2007",
+  #         xlab = "Year",
+  #         ylab = "Gross Agricultural Product ('000)")
   
 
 
