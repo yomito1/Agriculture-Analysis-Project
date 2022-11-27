@@ -12,25 +12,44 @@ library(scales)
 
 
 
-crops_data <- read.csv(file.choose(), header=T) %>% as_tibble()
+# crops_data <- read.csv(file.choose(), header=T) %>% as_tibble()
+crops_data <- read_csv(file = "Zip files/fao_data_crops_data.csv") # MO: to get the tibble right away
 
-fertilizer_data <- read.csv(file.choose(), header=T) %>% as_tibble()
+class(crops_data)
+glimpse(crops_data)
 
-forest_data <- read.csv(file.choose(), header=T) %>% as_tibble()
+# fertilizer_data <- read.csv(file.choose(), header=T) %>% as_tibble()
+fertilizer_data <- read_csv(file = "Zip files/fao_data_fertilizers_data.csv")
+
+class(crops_data)
+glimpse(fertilizer_data)
 
 
-land_data <-  read.csv(file.choose(), header=T) %>% as_tibble()
+# forest_data <- read.csv(file.choose(), header=T) %>% as_tibble()
 
-production_data <- read.csv(file.choose(), header=T) %>% as_tibble()
+forest_data <- read_csv(file = "Zip files/fao_data_forest_data.csv")
+
+class(forest_data)
+glimpse(forest_data)
+
+# land_data <-  read.csv(file.choose(), header=T) %>% as_tibble()
+
+land_data <-  read_csv(file = "Zip files/fao_data_land_data.csv")
+
+class(land_data)
+glimpse(land_data)
+
+# production_data <- read.csv(file.choose(), header=T) %>% as_tibble()
+
+production_data <- read_csv(file = "Zip files/fao_data_production_indices_data.csv")
 
 levels(as.factor(production_data$unit))
-
 
 #data manipulation
 
 tail(production_data)
 
-agric_production_data<- production_data %>% filter (element_code != "Footnote")  %>% 
+agric_production_data <- production_data %>% filter (element_code != "Footnote")  %>% 
   rename(
     Region     = country_or_area,
     Production = element,
@@ -44,8 +63,11 @@ agric_production_data<- production_data %>% filter (element_code != "Footnote") 
 
 glimpse(agric_production_data)
 
+agric_production_data %>% select("Region") %>% unique() %>% count()
+agric_production_data %>% select("Category") %>% unique()
 
-agric_production_data_formatted <- agric_production_data%>%
+
+agric_production_data_formatted <- agric_production_data %>%
   filter(!is.na(Price)) %>%
   mutate(Region     = as_factor(Region),
          Year       = as.Date(as.character(Year), format = "%Y"),
@@ -100,6 +122,7 @@ gross_agric_prod <- agric_production_data_formatted %>%
 
   
 #GAP Chart for the top 10 countries
+ 
 gross_agric_prod_top_10 %>%
   ggplot(aes(x = Year, y = Price, group=Region, color = Region, fill = Region)) +
   geom_area() +
